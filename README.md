@@ -103,7 +103,7 @@ Forwarder Manager's `make` does all of this.
 
 ## Users
 
-- [Forwarder Manager](https://github.com/heydemoura/ps5fwdgen): creates and
+- [Forwarder Manager](https://github.com/heydemoura/ps5-forwarder-manager): creates and
   edits forwarders on the console, and upgrades existing ones.
 
 ## License
