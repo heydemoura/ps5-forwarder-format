@@ -1,0 +1,35 @@
+{
+  "description": "Apps forwarders start. Emulator authors add theirs by pull request; these title IDs are reserved (SPEC.md, sections 5 and 10).",
+  "targets": [
+    {
+      "titleId": "PPSA99008",
+      "name": "ProsperoEden",
+      "emulates": "Nintendo Switch",
+      "args": { "rom": "--rom <path>", "exitAfterGame": "--exit-after-game" }
+    },
+    {
+      "titleId": "PPSA99764",
+      "name": "Porpoise",
+      "emulates": "Nintendo GameCube and Wii",
+      "args": { "rom": "--rom <path>" }
+    },
+    {
+      "titleId": "PPSA99203",
+      "name": "PS5SX2",
+      "emulates": "PlayStation 2",
+      "args": { "rom": "--rom <path>" }
+    },
+    {
+      "titleId": "PPSA50011",
+      "name": "PS5X360",
+      "emulates": "Xbox 360",
+      "args": { "rom": "--rom <path>" }
+    },
+    {
+      "titleId": "PPSA00000",
+      "name": "Payload",
+      "emulates": "ELF payloads",
+      "args": { "rom": "--rom <path>" }
+    }
+  ]
+}

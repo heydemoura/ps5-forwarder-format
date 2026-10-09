@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/heydemoura/ps5-forwarder-format/schema/forwarder.schema.json",
+  "title": "PS5 forwarder, forwarder.json, format version 1",
+  "description": "What a forwarder tile starts. See SPEC.md, section 2.",
+  "type": "object",
+  "required": ["target"],
+  "properties": {
+    "format": {
+      "description": "The format version. Writers set it; readers accept its absence (forwarders from before the standard).",
+      "type": "string",
+      "pattern": "^ps5-forwarder/[0-9]+$"
+    },
+    "target": {
+      "description": "The title ID of the app to start.",
+      "type": "string",
+      "pattern": "^(PPSA|CUSA|LAPY)[0-9]{5}$"
+    },
+    "args": {
+      "description": "Launch arguments passed to the target, in order. At most 4096 bytes in all, counting a NUL after each.",
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 64
+    },
+    "creator": {
+      "description": "What made the forwarder, for display and support.",
+      "type": "string",
+      "maxLength": 127
+    },
+    "rom": {
+      "description": "Before the standard: the --rom argument. Readers accept it; writers do not write it.",
+      "type": "string",
+      "deprecated": true
+    },
+    "exit_after_game": {
+      "description": "Before the standard: the --exit-after-game argument. Readers accept it; writers do not write it.",
+      "type": "boolean",
+      "deprecated": true
+    }
+  },
+  "additionalProperties": true
+}

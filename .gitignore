@@ -1,0 +1,3 @@
+build/
+forwarder/src/launcher_payload.inc
+*.o
