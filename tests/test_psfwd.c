@@ -107,10 +107,11 @@ static void test_write_read(void)
     CHECK(strstr(body, "\"conceptId\": \"99300\"") != NULL);
     CHECK(strstr(body, "UP9000-PPSA99300_00-PS5FORWARDER0000") != NULL);
     CHECK(strstr(body, "\"titleName\": \"Zelda: Tears\"") != NULL);
+    struct stat st;
     path_of(path, dir, "eboot.bin");
-    CHECK(exists(path));
+    CHECK(stat(path, &st) == 0 && (st.st_mode & 0111) == 0111);
     path_of(path, dir, "sce_module/libc.prx");
-    CHECK(exists(path));
+    CHECK(stat(path, &st) == 0 && (st.st_mode & 0111) == 0111);
     path_of(path, dir, "sce_sys/snd0.at9");
     CHECK(!exists(path));
     path_of(path, g_root, ".staging-PPSA99300");
@@ -174,6 +175,13 @@ static void test_legacy(void)
           strcmp(info.argv[1], "Melee.iso") == 0 && strcmp(info.argv[2], "--exit-after-game") == 0);
 }
 
+static const char *path_of_upgraded(void)
+{
+    static char path[512];
+    snprintf(path, sizeof(path), "%s/PPSA99400/eboot.bin", g_root);
+    return path;
+}
+
 static void test_upgrade(void)
 {
     char dir[512], path[512], body[256];
@@ -202,6 +210,12 @@ static void test_upgrade(void)
     read_text(path, body, sizeof(body));
     CHECK(strcmp(body, "someone else's app") == 0);
     CHECK(psfwd_upgrade(g_root, g_template) == 0);
+    struct stat st;
+    CHECK(stat(path_of_upgraded(), &st) == 0 && (st.st_mode & 0111) == 0111);
+    /* A current program that lost its execute bits is repaired. */
+    chmod(path_of_upgraded(), 0644);
+    CHECK(psfwd_upgrade(g_root, g_template) == 1);
+    CHECK(stat(path_of_upgraded(), &st) == 0 && (st.st_mode & 0111) == 0111);
 }
 
 static void test_remove(void)

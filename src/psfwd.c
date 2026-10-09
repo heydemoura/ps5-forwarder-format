@@ -191,13 +191,13 @@ static long read_into(const char *path, char *out, size_t max)
     return (long)done;
 }
 
-/* Copies a file of any size in chunks. */
-static int copy_file(const char *from, const char *to)
+/* Copies a file of any size in chunks, creating it with mode. */
+static int copy_file_mode(const char *from, const char *to, mode_t mode)
 {
     const int in = open(from, O_RDONLY);
     if (in < 0)
         return 0;
-    const int out = open(to, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    const int out = open(to, O_WRONLY | O_CREAT | O_TRUNC, mode);
     if (out < 0)
     {
         close(in);
@@ -218,6 +218,20 @@ static int copy_file(const char *from, const char *to)
     }
     close(in);
     return close(out) == 0 && ok;
+}
+
+/* Data files (art, JSON). */
+static int copy_file(const char *from, const char *to)
+{
+    return copy_file_mode(from, to, 0666);
+}
+
+/* The forwarder program and its runtime must stay executable, or the
+ * console refuses to start the tile (EACCES). open() leaves an existing
+ * file's mode alone, so the mode is set explicitly as well. */
+static int copy_program(const char *from, const char *to)
+{
+    return copy_file_mode(from, to, 0777) && chmod(to, 0777) == 0;
 }
 
 static int remove_tree(const char *path)
@@ -510,7 +524,7 @@ int psfwd_write(const char *root, const char *template_dir, const psfwd_spec *sp
     {
         (void)join(from, sizeof(from), template_dir, program[i][0]);
         (void)join(path, sizeof(path), stage, program[i][1]);
-        if (!copy_file(from, path))
+        if (!copy_program(from, path))
         {
             set_error(error, error_size, "missing template file %s", from);
             remove_tree(stage);
@@ -908,14 +922,20 @@ int psfwd_upgrade(const char *root, const char *template_dir)
             continue;
         (void)join(eboot, sizeof(eboot), folder, "eboot.bin");
         if (same_file(eboot, current))
+        {
+            /* Already current; make sure it can still be started. */
+            struct stat st;
+            if (stat(eboot, &st) == 0 && (st.st_mode & 0111) != 0111 && chmod(eboot, 0777) == 0)
+                ++upgraded;
             continue;
+        }
         int program = 0;
         for (size_t i = 0; i < sizeof(kProgramTags) / sizeof(kProgramTags[0]) && !program; ++i)
             program = file_contains(eboot, kProgramTags[i]);
         if (!program)
             continue; /* not a forwarder program: leave it alone */
         (void)join(staged, sizeof(staged), folder, "eboot.bin.new");
-        if (copy_file(current, staged) && rename(staged, eboot) == 0)
+        if (copy_program(current, staged) && rename(staged, eboot) == 0)
             ++upgraded;
         else
             (void)unlink(staged);
